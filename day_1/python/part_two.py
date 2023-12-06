@@ -12,6 +12,7 @@ NUMBER_MAPPINGS = {
     'eight': '8',
     'nine': '9'
 }
+NUMBERS_REGEX: str = f"(?=({'|'.join(NUMBER_MAPPINGS.keys())}|{'|'.join(NUMBER_MAPPINGS.values())}))"
 
 input_file: str = 'input.txt'
 output: int = 0
@@ -22,8 +23,8 @@ output_lines = []
 def convert_to_numbers(input_string: str) -> str:
     input = input_string.lower()
     output_list = []
-    numbers_regex: str = '(?=(' + ('|'.join(NUMBER_MAPPINGS.keys())) + '|' + ('|'.join(NUMBER_MAPPINGS.values())) + '))'
-    numbers = list(re.finditer(numbers_regex, input))
+    
+    numbers = list(re.finditer(NUMBERS_REGEX, input))
     for number in numbers:
         number = number.group(1)
         if number.isnumeric():
@@ -31,7 +32,6 @@ def convert_to_numbers(input_string: str) -> str:
         else:
             output_list.append(NUMBER_MAPPINGS[number])
 
-    #print(output_list)
     return ''.join(output_list)
 
 def validate(answers_file: str):
@@ -56,7 +56,6 @@ with open(input_file, 'r') as input:
         
         number: str = line[0] + line[-1]
         output_lines.append(number)
-        #print(f"{line_string} | {line} | {number}")
         try: 
             output += int(number)
         except ValueError as error:
