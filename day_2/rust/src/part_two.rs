@@ -9,7 +9,7 @@ enum CubeColor {
 
 #[derive(Debug)]
 struct GameRound {
-    id: u32,
+    _id: u32,
     cubes: Vec<CubeSet>,
 }
 
@@ -40,7 +40,7 @@ impl TryFrom<&str> for CubeColor {
 }
 
 impl GameRound {
-    fn get_max_cubes(&self, color: CubeColor) -> u32 {
+    fn get_max(&self, color: CubeColor) -> u32 {
         return self.cubes.iter()
             .filter(|cube| cube.color == color)
             .map(|cube| cube.count)
@@ -65,7 +65,7 @@ impl TryFrom<&str> for GameRound {
             .collect();
 
         Ok(GameRound {
-            id,
+            _id: id,
             cubes,
         })
     }
@@ -77,7 +77,7 @@ impl TryFrom<&str> for CubeSet {
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         // String format: '<count> <color>'
         let mut parts = value.trim().split(" ");
-        
+
         let count: u32 = parts.next()
             .and_then(|string| string.parse().ok())
             .ok_or("'count' could not be initialized.")?;
@@ -93,19 +93,10 @@ impl TryFrom<&str> for CubeSet {
 }
 
 impl Solution {
-    fn is_possible_with(&self, game: &GameRound) -> bool {
-        return self.red_cubes >= game.get_max_cubes(CubeColor::Red) && 
-            self.green_cubes >= game.get_max_cubes(CubeColor::Green) &&
-            self.blue_cubes >= game.get_max_cubes(CubeColor::Blue);
+    fn power(&self) -> u32 {
+        return self.red_cubes * self.blue_cubes * self.green_cubes;
     }
 }
-
-
-const INPUT_SOLUTION: Solution = Solution {
-    red_cubes: 12,
-    green_cubes: 13,
-    blue_cubes: 14,
-};
 
 const INPUT_FILE_NAME: &str = "input.txt";
 
@@ -124,7 +115,14 @@ fn main() {
                 },
             }
         }).collect();
-    
-    let output: u32 = rounds.iter().filter(|round| INPUT_SOLUTION.is_possible_with(round)).map(|round| round.id).sum();
+
+    let output: u32 = rounds.iter()
+    .map(|round| Solution {
+        red_cubes: round.get_max(CubeColor::Red),
+        green_cubes: round.get_max(CubeColor::Green),
+        blue_cubes: round.get_max(CubeColor::Blue),
+    }).map(|solution| solution.power())
+    .sum();
+
     println!("Output: {}", output)
 }
