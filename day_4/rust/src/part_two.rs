@@ -23,7 +23,7 @@ impl Display for CardParseError {
 
 #[derive(Debug)]
 struct Card {
-    _id: u32,
+    id: u32,
     winning_numbers: Vec<u32>,
     your_numbers: Vec<u32>,
 }
@@ -47,9 +47,9 @@ impl Card {
             .ok_or(CardParseError::PipeSplitTooShort(1, 2))?);
 
         Ok(Card { 
-            _id: id, 
+            id, 
             winning_numbers, 
-            your_numbers, 
+            your_numbers,
         })
     }
 
@@ -60,8 +60,6 @@ impl Card {
             .collect()
     }
 }
-
-
 
 fn parse_numbers(numbers: &str) -> Vec<u32> {
     numbers
@@ -74,6 +72,18 @@ fn parse_numbers(numbers: &str) -> Vec<u32> {
         .collect()
 }
 
+fn increment_stacks(stacks: &mut [u32]) {
+    if let Some((amount, stacks)) = stacks.split_first_mut() {
+
+        for stack in stacks {
+            *stack += *amount;
+        }
+    } else {
+        println!("slice is empty")
+    }
+    
+}
+
 const INPUT_PATH: &str = "./input.txt";
 
 fn main() {
@@ -84,12 +94,18 @@ fn main() {
         .filter_map(|line| Card::new(line)
             .map_err(|err| println!("Card '{line}' failed to parse: {err}"))
             .ok())
-            .collect();
+        .collect();
 
-    let output: u32 = cards.iter()
-        .map(|card| card.get_matching_numbers().iter()
-                .fold(0.5, |acc: f64, _| acc * 2.0) as u32)
-        .sum();
+    let mut card_counts: Vec<u32> = vec![1; cards.len() + 1];
+    card_counts[0] = 0;
+
+    for card in &cards {
+        let matching_numbers: u32 = card.id + (card.get_matching_numbers().len() as u32);
+        let slice: &mut [u32] = &mut card_counts[card.id as usize..=matching_numbers as usize];
+        increment_stacks(slice);
+    }
     
+    let output: u32 = card_counts.iter().sum();
+
     println!("Output: {output}")
 }
